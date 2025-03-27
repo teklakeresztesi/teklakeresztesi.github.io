@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2025-03-27T21:08:58+02:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">The Bare Minimum</title><subtitle>The Bare Minimum is a blog for Flutter technical articles that I encounter in my daily life as a mobile software developer. </subtitle><entry><title type="html">Sealed classes in Flutter</title><link href="http://localhost:4000/flutter/2025/03/27/sealed-classes.html" rel="alternate" type="text/html" title="Sealed classes in Flutter" /><published>2025-03-27T19:06:13+02:00</published><updated>2025-03-27T19:06:13+02:00</updated><id>http://localhost:4000/flutter/2025/03/27/sealed-classes</id><content type="html" xml:base="http://localhost:4000/flutter/2025/03/27/sealed-classes.html"><![CDATA[<p>I recently interviewed for a Senior Flutter Developer position and at the live code review session I was asked about sealed classes and I gave a wrong answer. So I looked into the topic in a more detail.</p>
+
+<p><br /><br /></p>
+<h1 id="what-are-sealed-classes">What Are Sealed Classes?</h1>
+
+<p>A sealed class in Dart is a class that restricts which classes can extend it. Unlike normal classes, sealed classes allow only a predefined set of subclasses within the same file. This makes them particularly useful for handling state management and complex app logic.</p>
+
+<p><strong><em>The syntax is the following:</em></strong></p>
+
+<figure class="highlight"><pre><code class="language-dart" data-lang="dart"><span class="kd">sealed</span> <span class="kd">class</span> <span class="nc">AuthState</span> <span class="p">{}</span>
+
+<span class="kd">class</span> <span class="nc">Authenticated</span> <span class="kd">extends</span> <span class="n">AuthState</span> <span class="p">{</span>
+  <span class="kd">final</span> <span class="kt">String</span> <span class="n">userId</span><span class="p">;</span>
+  <span class="n">Authenticated</span><span class="p">(</span><span class="k">this</span><span class="o">.</span><span class="na">userId</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kd">class</span> <span class="nc">Unauthenticated</span> <span class="kd">extends</span> <span class="n">AuthState</span> <span class="p">{}</span>
+
+<span class="kd">class</span> <span class="nc">Loading</span> <span class="kd">extends</span> <span class="n">AuthState</span> <span class="p">{}</span></code></pre></figure>
+
+<p><br /><br />
+This way you can use the sealed class in a switch, and you will get a compiler error if you forget to handle one of the cases.</p>
+
+<p><strong><em>Usage:</em></strong></p>
+
+<figure class="highlight"><pre><code class="language-dart" data-lang="dart"><span class="n">BlocBuilder</span><span class="p">&lt;</span><span class="n">AuthCubit</span><span class="p">,</span> <span class="n">AuthState</span><span class="p">&gt;(</span>
+  <span class="nl">builder:</span> <span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">switch</span> <span class="p">(</span><span class="n">state</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">case</span> <span class="n">Authenticated</span><span class="p">(</span><span class="o">:</span><span class="kd">var</span> <span class="n">userId</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">return</span> <span class="n">Text</span><span class="p">(</span><span class="s">"Welcome, </span><span class="si">$userId</span><span class="s">!"</span><span class="p">);</span>
+      <span class="k">case</span> <span class="n">Unauthenticated</span><span class="p">()</span><span class="o">:</span>
+        <span class="k">return</span> <span class="n">Text</span><span class="p">(</span><span class="s">"Please log in."</span><span class="p">);</span>
+      <span class="k">case</span> <span class="n">Loading</span><span class="p">()</span><span class="o">:</span>
+        <span class="k">return</span> <span class="n">CircularProgressIndicator</span><span class="p">();</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+<span class="p">)</span></code></pre></figure>
+
+<p><br /><br /></p>
+<h1 id="the-trick-question">The trick question</h1>
+
+<p>But the question wasn’t about the usage of sealed classes, all of the authState classes extended AuthState, except for one. In the heat of the moment I said that the code won’t compile, since only abstract classes can be implemented, but then I tried it in VSCode and I didn’t get an error, but the state looked like any of the other states. So what IS the difference between extends and implements in this case?</p>
+
+<figure class="highlight"><pre><code class="language-dart" data-lang="dart"><span class="kd">sealed</span> <span class="kd">class</span> <span class="nc">AuthState</span> <span class="p">{}</span>
+
+<span class="kd">class</span> <span class="nc">Authenticated</span> <span class="kd">extends</span> <span class="n">AuthState</span> <span class="p">{</span>
+  <span class="kd">final</span> <span class="kt">String</span> <span class="n">userId</span><span class="p">;</span>
+  <span class="n">Authenticated</span><span class="p">(</span><span class="k">this</span><span class="o">.</span><span class="na">userId</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kd">class</span> <span class="nc">Unauthenticated</span> <span class="kd">extends</span> <span class="n">AuthState</span> <span class="p">{}</span>
+
+<span class="kd">class</span> <span class="nc">Loading</span> <span class="kd">extends</span> <span class="n">AuthState</span> <span class="p">{}</span>
+
+<span class="kd">class</span> <span class="nc">AuthError</span> <span class="kd">implements</span> <span class="n">AuthState</span> <span class="p">{</span>
+  <span class="kd">final</span> <span class="kt">String</span> <span class="n">message</span><span class="p">;</span>
+  <span class="n">AuthError</span><span class="p">(</span><span class="k">this</span><span class="o">.</span><span class="na">message</span><span class="p">);</span>
+<span class="p">}</span></code></pre></figure>
+
+<p><br /><br /></p>
+<h1 id="extends-vs-implements">Extends vs. implements</h1>
+
+<p>When a class extends another class, it inherits all the properties and methods of the base class. The subclass is considered a specialized version of the base class. It can override methods or add new functionality, but it is still tightly coupled to the base class.</p>
+
+<p>When a class implements another class (or interface), it does not inherit any properties or methods from the base class. Instead, it is required to provide its own implementation of all the methods and properties defined in the base class (or interface). This is more like a contract that the implementing class must fulfill.</p>
+
+<p><br /><br /></p>
+<h1 id="the-correct-answer">The correct answer</h1>
+
+<p>The catch of the question was actually that sealed classes are implicitly abstract, so it is syntactically correct to implement a sealed class, but when using bloc states, we generally want to extend the base state, because our states will be specialized ones of the sealed class.</p>
+
+<p><br /><br />
+<br /><br /></p>
+
+<p>Check out my <a href="https://www.linkedin.com/in/tekla-keresztesi-02887298/">Linkedin profile</a> for more info on how to get the most out of Flutter. If you have questions, feel free to reach out.</p>]]></content><author><name></name></author><category term="flutter" /><summary type="html"><![CDATA[I recently interviewed for a Senior Flutter Developer position and at the live code review session I was asked about sealed classes and I gave a wrong answer. So I looked into the topic in a more detail. What Are Sealed Classes?]]></summary></entry></feed>

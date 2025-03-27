@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Sealed classes in Flutter | The Bare Minimum</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="Sealed classes in Flutter" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="I recently interviewed for a Senior Flutter Developer position and at the live code review session I was asked about sealed classes and I gave a wrong answer. So I looked into the topic in a more detail. What Are Sealed Classes?" />
+<meta property="og:description" content="I recently interviewed for a Senior Flutter Developer position and at the live code review session I was asked about sealed classes and I gave a wrong answer. So I looked into the topic in a more detail. What Are Sealed Classes?" />
+<link rel="canonical" href="http://localhost:4000/flutter/2025/03/27/sealed-classes.html" />
+<meta property="og:url" content="http://localhost:4000/flutter/2025/03/27/sealed-classes.html" />
+<meta property="og:site_name" content="The Bare Minimum" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2025-03-27T19:06:13+02:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Sealed classes in Flutter" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2025-03-27T19:06:13+02:00","datePublished":"2025-03-27T19:06:13+02:00","description":"I recently interviewed for a Senior Flutter Developer position and at the live code review session I was asked about sealed classes and I gave a wrong answer. So I looked into the topic in a more detail. What Are Sealed Classes?","headline":"Sealed classes in Flutter","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/flutter/2025/03/27/sealed-classes.html"},"url":"http://localhost:4000/flutter/2025/03/27/sealed-classes.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="The Bare Minimum" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">The Bare Minimum</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Sealed classes in Flutter</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2025-03-27T19:06:13+02:00" itemprop="datePublished">Mar 27, 2025
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>I recently interviewed for a Senior Flutter Developer position and at the live code review session I was asked about sealed classes and I gave a wrong answer. So I looked into the topic in a more detail.</p>
+
+<p><br /><br /></p>
+<h1 id="what-are-sealed-classes">What Are Sealed Classes?</h1>
+
+<p>A sealed class in Dart is a class that restricts which classes can extend it. Unlike normal classes, sealed classes allow only a predefined set of subclasses within the same file. This makes them particularly useful for handling state management and complex app logic.</p>
+
+<p><strong><em>The syntax is the following:</em></strong></p>
+
+<figure class="highlight"><pre><code class="language-dart" data-lang="dart"><span class="kd">sealed</span> <span class="kd">class</span> <span class="nc">AuthState</span> <span class="p">{}</span>
+
+<span class="kd">class</span> <span class="nc">Authenticated</span> <span class="kd">extends</span> <span class="n">AuthState</span> <span class="p">{</span>
+  <span class="kd">final</span> <span class="kt">String</span> <span class="n">userId</span><span class="p">;</span>
+  <span class="n">Authenticated</span><span class="p">(</span><span class="k">this</span><span class="o">.</span><span class="na">userId</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kd">class</span> <span class="nc">Unauthenticated</span> <span class="kd">extends</span> <span class="n">AuthState</span> <span class="p">{}</span>
+
+<span class="kd">class</span> <span class="nc">Loading</span> <span class="kd">extends</span> <span class="n">AuthState</span> <span class="p">{}</span></code></pre></figure>
+
+<p><br /><br />
+This way you can use the sealed class in a switch, and you will get a compiler error if you forget to handle one of the cases.</p>
+
+<p><strong><em>Usage:</em></strong></p>
+
+<figure class="highlight"><pre><code class="language-dart" data-lang="dart"><span class="n">BlocBuilder</span><span class="p">&lt;</span><span class="n">AuthCubit</span><span class="p">,</span> <span class="n">AuthState</span><span class="p">&gt;(</span>
+  <span class="nl">builder:</span> <span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">switch</span> <span class="p">(</span><span class="n">state</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">case</span> <span class="n">Authenticated</span><span class="p">(</span><span class="o">:</span><span class="kd">var</span> <span class="n">userId</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">return</span> <span class="n">Text</span><span class="p">(</span><span class="s">"Welcome, </span><span class="si">$userId</span><span class="s">!"</span><span class="p">);</span>
+      <span class="k">case</span> <span class="n">Unauthenticated</span><span class="p">()</span><span class="o">:</span>
+        <span class="k">return</span> <span class="n">Text</span><span class="p">(</span><span class="s">"Please log in."</span><span class="p">);</span>
+      <span class="k">case</span> <span class="n">Loading</span><span class="p">()</span><span class="o">:</span>
+        <span class="k">return</span> <span class="n">CircularProgressIndicator</span><span class="p">();</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+<span class="p">)</span></code></pre></figure>
+
+<p><br /><br /></p>
+<h1 id="the-trick-question">The trick question</h1>
+
+<p>But the question wasn’t about the usage of sealed classes, all of the authState classes extended AuthState, except for one. In the heat of the moment I said that the code won’t compile, since only abstract classes can be implemented, but then I tried it in VSCode and I didn’t get an error, but the state looked like any of the other states. So what IS the difference between extends and implements in this case?</p>
+
+<figure class="highlight"><pre><code class="language-dart" data-lang="dart"><span class="kd">sealed</span> <span class="kd">class</span> <span class="nc">AuthState</span> <span class="p">{}</span>
+
+<span class="kd">class</span> <span class="nc">Authenticated</span> <span class="kd">extends</span> <span class="n">AuthState</span> <span class="p">{</span>
+  <span class="kd">final</span> <span class="kt">String</span> <span class="n">userId</span><span class="p">;</span>
+  <span class="n">Authenticated</span><span class="p">(</span><span class="k">this</span><span class="o">.</span><span class="na">userId</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kd">class</span> <span class="nc">Unauthenticated</span> <span class="kd">extends</span> <span class="n">AuthState</span> <span class="p">{}</span>
+
+<span class="kd">class</span> <span class="nc">Loading</span> <span class="kd">extends</span> <span class="n">AuthState</span> <span class="p">{}</span>
+
+<span class="kd">class</span> <span class="nc">AuthError</span> <span class="kd">implements</span> <span class="n">AuthState</span> <span class="p">{</span>
+  <span class="kd">final</span> <span class="kt">String</span> <span class="n">message</span><span class="p">;</span>
+  <span class="n">AuthError</span><span class="p">(</span><span class="k">this</span><span class="o">.</span><span class="na">message</span><span class="p">);</span>
+<span class="p">}</span></code></pre></figure>
+
+<p><br /><br /></p>
+<h1 id="extends-vs-implements">Extends vs. implements</h1>
+
+<p>When a class extends another class, it inherits all the properties and methods of the base class. The subclass is considered a specialized version of the base class. It can override methods or add new functionality, but it is still tightly coupled to the base class.</p>
+
+<p>When a class implements another class (or interface), it does not inherit any properties or methods from the base class. Instead, it is required to provide its own implementation of all the methods and properties defined in the base class (or interface). This is more like a contract that the implementing class must fulfill.</p>
+
+<p><br /><br /></p>
+<h1 id="the-correct-answer">The correct answer</h1>
+
+<p>The catch of the question was actually that sealed classes are implicitly abstract, so it is syntactically correct to implement a sealed class, but when using bloc states, we generally want to extend the base state, because our states will be specialized ones of the sealed class.</p>
+
+<p><br /><br />
+<br /><br /></p>
+
+<p>Check out my <a href="https://www.linkedin.com/in/tekla-keresztesi-02887298/">Linkedin profile</a> for more info on how to get the most out of Flutter. If you have questions, feel free to reach out.</p>
+
+
+  </div><a class="u-url" href="/flutter/2025/03/27/sealed-classes.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">The Bare Minimum</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">The Bare Minimum</li><li><a class="u-email" href="mailto:keresztesitekla@gmail.com">keresztesitekla@gmail.com</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/teklakeresztesi"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">teklakeresztesi</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>The Bare Minimum is a blog for Flutter technical articles that I encounter in my daily life as a mobile software developer. </p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
