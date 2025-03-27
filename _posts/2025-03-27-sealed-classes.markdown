@@ -4,7 +4,7 @@ title:  "Sealed classes in Flutter"
 date:   2025-03-27 19:06:13 +0200
 categories: flutter
 ---
-I recently interviewed for a Senior Flutter Developer position and at the live code review session I was asked about sealed classes and I gave a wrong answer. So I looked into the topic in a more detail.
+I recently interviewed for a Senior Flutter Developer position and at the live code review session I was asked about sealed classes and I gave a wrong answer. So I looked into the topic in more detail.
  
 <br/><br/>
 # What Are Sealed Classes?
@@ -48,7 +48,7 @@ BlocBuilder<AuthCubit, AuthState>(
 <br/><br/>
 # The trick question
 
-But the question wasn't about the usage of sealed classes, all of the authState classes extended AuthState, except for one. In the heat of the moment I said that the code won't compile, since only abstract classes can be implemented, but then I tried it in VSCode and I didn't get an error, but the state looked like any of the other states. So what IS the difference between extends and implements in this case? 
+But the question wasn't about the usage of sealed classes, all of the authState classes extended AuthState, except for one, which implemented it. In the heat of the moment I said that the code won't compile, since only abstract classes can be implemented, but then I tried it in VSCode and I didn't get a compile error, instead the state looked like any of the other states. So what IS the difference between extends and implements in this case?
 
 {% highlight dart %}
 sealed class AuthState {}
@@ -78,11 +78,13 @@ When a class implements another class (or interface), it does not inherit any pr
 <br/><br/>
 # The correct answer
 
-The catch of the question was actually that sealed classes are implicitly abstract, so it is syntactically correct to implement a sealed class, but when using bloc states, we generally want to extend the base state, because our states will be specialized ones of the sealed class.
+The catch of the question was actually that sealed classes are implicitly abstract, so it is syntactically correct to implement a sealed class, but when using bloc states, we generally want to extend the base state, because our states will be specialized ones of the sealed class, carrying extra information, not only adhering to a contract.
 
 <br/><br/>
-<br/><br/>
+
+I started the [The Bare Minimum][the-bare-minimum] series to present the bare minimum knowledge needed in Flutter to make your life easier.
 
 Check out my [Linkedin profile][linkedin] for more info on how to get the most out of Flutter. If you have questions, feel free to reach out.
 
 [linkedin]: https://www.linkedin.com/in/tekla-keresztesi-02887298/
+[the-bare-minimum]: https://teklakeresztesi.github.io
