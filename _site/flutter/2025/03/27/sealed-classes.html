@@ -49,10 +49,10 @@
   <div class="post-content e-content" itemprop="articleBody">
     <p>I recently interviewed for a Senior Flutter Developer position and at the live code review session I was asked about sealed classes and I gave a wrong answer. So I looked into the topic in more detail.</p>
 
-<p><br /><br /></p>
+<p><br /></p>
 <h1 id="what-are-sealed-classes">What Are Sealed Classes?</h1>
 
-<p>A sealed class in Dart is a class that restricts which classes can extend it. Unlike normal classes, sealed classes allow only a predefined set of subclasses within the same file. This makes them particularly useful for handling state management and complex app logic.</p>
+<p>A sealed class in Dart is a class that restricts which classes can extend it. Unlike normal classes, sealed classes allow only a predefined set of subclasses within the same file. This makes them particularly useful for handling state management and complex app logic. - This means that once I create a sealed class, I have to declare all subclasses in the same file and it gives me the ability to use a switch to check for the different subclasses.</p>
 
 <p><strong><em>The syntax is the following:</em></strong></p>
 
@@ -67,8 +67,8 @@
 
 <span class="kd">class</span> <span class="nc">Loading</span> <span class="kd">extends</span> <span class="n">AuthState</span> <span class="p">{}</span></code></pre></figure>
 
-<p><br /><br />
-This way you can use the sealed class in a switch, and you will get a compiler error if you forget to handle one of the cases.</p>
+<p><br />
+I can use the sealed class in a switch, and will get a compiler error if I forget to handle one of the cases.</p>
 
 <p><strong><em>Usage:</em></strong></p>
 
@@ -85,10 +85,11 @@ This way you can use the sealed class in a switch, and you will get a compiler e
   <span class="p">},</span>
 <span class="p">)</span></code></pre></figure>
 
-<p><br /><br /></p>
+<p><br /></p>
 <h1 id="the-trick-question">The trick question</h1>
 
-<p>But the question wasn’t about the usage of sealed classes, all of the authState classes extended AuthState, except for one, which implemented it. In the heat of the moment I said that the code won’t compile, since only abstract classes can be implemented, but then I tried it in VSCode and I didn’t get a compile error, instead the state looked like any of the other states. So what IS the difference between extends and implements in this case?</p>
+<p>But the question wasn’t about the usage of sealed classes, all of the authState classes extended AuthState, except for one, which implemented it. In the heat of the moment I said that the code won’t compile, since only abstract classes can be implemented, but then I tried it in VSCode and I didn’t get a compile error, instead the state looked like any of the other states.
+<strong><em>So what IS the difference between extends and implements in this case?</em></strong></p>
 
 <figure class="highlight"><pre><code class="language-dart" data-lang="dart"><span class="kd">sealed</span> <span class="kd">class</span> <span class="nc">AuthState</span> <span class="p">{}</span>
 
@@ -106,23 +107,56 @@ This way you can use the sealed class in a switch, and you will get a compiler e
   <span class="n">AuthError</span><span class="p">(</span><span class="k">this</span><span class="o">.</span><span class="na">message</span><span class="p">);</span>
 <span class="p">}</span></code></pre></figure>
 
-<p><br /><br /></p>
+<p><br /></p>
 <h1 id="extends-vs-implements">Extends vs. implements</h1>
 
 <p>When a class extends another class, it inherits all the properties and methods of the base class. The subclass is considered a specialized version of the base class. It can override methods or add new functionality, but it is still tightly coupled to the base class.</p>
 
 <p>When a class implements another class (or interface), it does not inherit any properties or methods from the base class. Instead, it is required to provide its own implementation of all the methods and properties defined in the base class (or interface). This is more like a contract that the implementing class must fulfill.</p>
 
-<p><br /><br /></p>
+<p><br /></p>
 <h1 id="the-correct-answer">The correct answer</h1>
 
 <p>The catch of the question was actually that sealed classes are implicitly abstract, so it is syntactically correct to implement a sealed class, but when using bloc states, we generally want to extend the base state, because our states will be specialized ones of the sealed class, carrying extra information, not only adhering to a contract.</p>
 
-<p><br /><br /></p>
+<p><br /></p>
+<h1 id="so-lets-break-the-code">So let’s break the code</h1>
 
-<p>I started the <a href="https://teklakeresztesi.github.io">The Bare Minimum</a> series to present the bare minimum knowledge needed in Flutter to make your life easier.</p>
+<p>I create my bloc states with the <a href="https://pub.dev/packages/freezed">freezed</a> package, and add factory constructors to my different states.</p>
 
-<p>Check out my <a href="https://www.linkedin.com/in/tekla-keresztesi-02887298/">Linkedin profile</a> for more info on how to get the most out of Flutter. If you have questions, feel free to reach out.</p>
+<figure class="highlight"><pre><code class="language-dart" data-lang="dart"><span class="kn">part</span> <span class="s">'auth_state.freezed.dart'</span><span class="o">;</span>
+
+<span class="nd">@freezed</span>
+<span class="kd">sealed</span> <span class="kd">class</span> <span class="nc">AuthState</span> <span class="k">with</span> <span class="n">_$AuthState</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="kd">factory</span> <span class="n">AuthState</span><span class="o">.</span><span class="na">loading</span><span class="p">()</span> <span class="o">=</span> <span class="n">Loading</span><span class="p">;</span>
+  <span class="kd">const</span> <span class="kd">factory</span> <span class="n">AuthState</span><span class="o">.</span><span class="na">authenticated</span><span class="p">(</span><span class="kt">String</span> <span class="n">userId</span><span class="p">)</span> <span class="o">=</span> <span class="n">Authenticated</span><span class="p">;</span>
+  <span class="kd">const</span> <span class="kd">factory</span> <span class="n">AuthState</span><span class="o">.</span><span class="na">unauthenticated</span><span class="p">()</span> <span class="o">=</span> <span class="n">Unauthenticated</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kd">class</span> <span class="nc">AuthError</span> <span class="kd">implements</span> <span class="n">AuthState</span> <span class="p">{</span>
+  <span class="kd">final</span> <span class="kt">String</span> <span class="n">message</span><span class="p">;</span>
+  <span class="n">AuthError</span><span class="p">(</span><span class="k">this</span><span class="o">.</span><span class="na">message</span><span class="p">);</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>So this does give me an error for the AuthError class:
+‘Missing concrete implementations of ‘<em>$AuthState.map’, ‘</em>$AuthState.mapOrNull’, ‘<em>$AuthState.maybeMap’, ‘</em>$AuthState.maybeWhen’, and 2 more.
+Try implementing the missing methods, or make the class abstract.’</p>
+
+<p>This means that AuthError is missing the implementation for the contract that the generated class _$AuthState mixin requires.</p>
+
+<p><br /></p>
+<h1 id="conclusion">Conclusion</h1>
+
+<p>Technically you can implement the sealed class, since it is implicitly abstract, I personally prefer to use the freezed version with factory constructors, this also means there’s no extends or implements in the code.
+I’m definitely glad that this question made me think of sealed classes a bit more.</p>
+
+<p><br /></p>
+
+<h1 id="native">Native</h1>
+
+<p>If you’re interested how this works in native code, check out <a href="https://medium.com/@da_pacheco/using-kotlins-sealed-class-to-approximate-swift-s-enum-with-associated-data-7e0abac88bbf">this article</a> to see how to use sealed classes in kotlin or enums in swift.</p>
+
+<p><br /></p>
 
 
   </div><a class="u-url" href="/flutter/2025/03/27/sealed-classes.html" hidden></a>
